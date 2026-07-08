@@ -1,0 +1,76 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "docstring-tuner"
+version = "0.1.0"
+description = "QLoRA fine-tuning of a small LLM to generate Google-style Python docstrings, with a base-vs-fine-tuned evaluation harness."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "paffon" }]
+keywords = ["qlora", "lora", "peft", "docstrings", "llm", "fine-tuning"]
+
+# Abstract runtime dependencies (floors). For reproducible installs use the
+# pinned requirements files: requirements-cpu.txt (local) / requirements-gpu.txt (Colab).
+dependencies = [
+    "torch>=2.9",
+    "transformers>=5.13",
+    "trl>=1.7",
+    "peft>=0.19",
+    "accelerate>=1.14",
+    "datasets>=4.7,<5",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "mypy>=1.11", "ruff>=0.6", "black>=24.8"]
+
+[project.scripts]
+dt-data = "docstring_tuner.data:main"
+dt-train = "docstring_tuner.train:main"
+dt-infer = "docstring_tuner.generate:main"
+dt-eval = "docstring_tuner.evaluate:main"
+dt-demo = "docstring_tuner.demo:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+docstring_tuner = ["py.typed"]
+
+[tool.black]
+line-length = 100
+target-version = ["py311"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+files = ["src", "tests"]
+# Pragmatic: the heavy ML libs are largely untyped; don't let their `Any`
+# returns produce noise. Our own code stays fully annotated under `strict`.
+warn_return_any = false
+
+[[tool.mypy.overrides]]
+module = [
+    "transformers.*",
+    "trl.*",
+    "peft.*",
+    "bitsandbytes.*",
+    "datasets.*",
+    "accelerate.*",
+    "torch.*",
+]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

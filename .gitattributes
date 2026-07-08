@@ -1,0 +1,10 @@
+# Normalize all text to LF in the repo (keeps the Makefile and shell/py files
+# working on Unix/Colab regardless of the OS they were committed from).
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.safetensors binary
+*.bin binary
+*.ipynb text eol=lf

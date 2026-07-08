@@ -1,0 +1,19 @@
+# Local / CPU stack (Windows, macOS). Used for data building, eval scoring, demo,
+# tests, and type-checking. 4-bit QLoRA training is GPU-only and NOT possible here
+# (see requirements-gpu.txt + the Colab notebook).
+#
+# On Windows/macOS, `pip install torch==2.9.1` from PyPI is the CPU wheel by default.
+# On Linux, prepend this line to force the CPU build:
+#   --extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.9.1
+transformers==5.13.0
+trl==1.7.1
+peft==0.19.1
+accelerate==1.14.0
+datasets==4.8.5
+
+# Dev tooling
+pytest==8.3.4
+mypy==1.14.1
+ruff==0.9.2
+black==24.10.0

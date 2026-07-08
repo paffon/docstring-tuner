@@ -1,0 +1,10 @@
+# Colab / CUDA T4 stack. Install ON TOP of Colab's preinstalled CUDA torch:
+#   !pip install -r requirements-gpu.txt
+# Do NOT pin torch here — reinstalling it on Colab tends to break the CUDA build.
+# bitsandbytes ships prebuilt CUDA binaries and selects the right one at import.
+transformers==5.13.0
+trl==1.7.1
+peft==0.19.1
+accelerate==1.14.0
+datasets==4.8.5
+bitsandbytes==0.49.2
