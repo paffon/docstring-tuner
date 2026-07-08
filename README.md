@@ -109,6 +109,9 @@ ruff check .    # lint
 black --check . # format check
 ```
 
+The project was built in small, self-contained steps; that journal lives in
+[docs/LEARNINGS.md](docs/LEARNINGS.md).
+
 ## License
 
 MIT — see [LICENSE](LICENSE).

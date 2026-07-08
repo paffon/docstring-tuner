@@ -16,6 +16,32 @@ When the tests go green, tick the box and commit.
 
 ---
 
+## Where the build stands
+
+The scaffolding and the fiddly/GPU modules are all in place and committed. **Three small
+modules are left for me to write** — the highest-learning bits — each with failing tests already
+waiting:
+
+| Module | What to implement | Test file | Phase |
+| --- | --- | --- | --- |
+| `src/docstring_tuner/prompts.py` | `SYSTEM_PROMPT`, `user_prompt`, `build_messages` | `tests/test_prompts.py` | 1 |
+| `src/docstring_tuner/ast_utils.py` | `split_function` | `tests/test_ast_utils.py` | 2 |
+| `src/docstring_tuner/metrics.py` | `rouge_l`, `is_google_style` | `tests/test_metrics.py` | 7 |
+
+Right now `pytest` reports **26 passed / 24 failed** — the 24 are exactly these three modules.
+Turn them green one file at a time (each stub's docstring walks through the algorithm).
+
+**Then, in order:**
+1. `python -m docstring_tuner.data` — build the dataset locally (CPU, a few minutes).
+2. Open `notebooks/train_colab.ipynb` on a Colab **T4** — trains the adapter and generates base
+   vs tuned docstrings; download `artifacts.zip` and unzip it into the repo.
+3. `python -m docstring_tuner.demo --limit 3` — see base vs tuned side by side.
+4. `python -m docstring_tuner.evaluate` — score them with the local `claude` judge; writes
+   `artifacts/eval_report.json`.
+5. Fill the README results table and commit a couple of small `artifacts/samples/`.
+
+---
+
 ## Phase 0 — Scaffold & tooling ✅
 
 Set up the skeleton so everything after it has a home.
