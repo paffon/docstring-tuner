@@ -32,6 +32,7 @@ Right now `pytest` reports **26 passed / 24 failed** — the 24 are exactly thes
 Turn them green one file at a time (each stub's docstring walks through the algorithm).
 
 **Then, in order:**
+
 1. `python -m docstring_tuner.data` — build the dataset locally (CPU, a few minutes).
 2. Open `notebooks/train_colab.ipynb` on a Colab **T4** — trains the adapter and generates base
    vs tuned docstrings; download `artifacts.zip` and unzip it into the repo.
@@ -51,6 +52,7 @@ Set up the skeleton so everything after it has a home.
 - [x] `.gitignore`, `LICENSE`, `Makefile`, `configs/default.toml`, README skeleton
 
 **What I learned / why it's shaped this way**
+
 - **`src/` layout** stops Python from importing the package from the working tree by accident, so
   tests exercise the *installed* package — closer to how a user would consume it.
 - **Console scripts beat a Makefile on Windows** (there's no `make` here). `pip install -e .`
@@ -63,9 +65,9 @@ Set up the skeleton so everything after it has a home.
 
 ## Phase 1 — Config + prompts **(prompts = hands-on)**
 
-- [ ] Read `src/docstring_tuner/config.py` (frozen dataclasses + a tiny `tomllib` loader)
-- [ ] Implement `src/docstring_tuner/prompts.py` so `pytest tests/test_prompts.py` passes
-- [ ] Commit
+- [x] Read `src/docstring_tuner/config.py` (frozen dataclasses + a tiny `tomllib` loader)
+- [x] Implement `src/docstring_tuner/prompts.py` so `pytest tests/test_prompts.py` passes
+- [x] Commit
 
 **Concepts:** how the instruction we give the model (the *prompt*) defines the task, and why a
 frozen dataclass config keeps runs reproducible. The prompt is half the battle — a fine-tune only

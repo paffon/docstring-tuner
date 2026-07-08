@@ -46,8 +46,27 @@ from __future__ import annotations
 
 Message = dict[str, str]
 
-# TODO(you): replace with the system instruction described in the module docstring.
-SYSTEM_PROMPT: str = ""
+SYSTEM_PROMPT: str = """
+You're a Python documentation assistant. Given a function, output ONLY a
+Google-style docstring with summary, Args, Returns, and Raises sections as
+appropriate.
+
+Google-style docstring format:
+\"\"\"One-line summary in the imperative mood.
+
+Optional longer description.
+
+Args:
+    x: What x is.
+    y: What y is.
+
+Returns:
+    What the function returns.
+
+Raises:
+    ValueError: When something is wrong.
+\"\"\"
+"""
 
 
 def user_prompt(code: str) -> str:
@@ -55,7 +74,15 @@ def user_prompt(code: str) -> str:
 
     The returned string MUST contain ``code`` verbatim.
     """
-    raise NotImplementedError("Implement user_prompt (learning phase 1)")
+    return f"""
+The following is the code for which the Google-style docstring is requested.
+Please provide the docstring only, without any code fences or surrounding function.
+Code:
+```
+{code}
+```
+
+"""
 
 
 def build_messages(code: str) -> list[Message]:
@@ -64,4 +91,7 @@ def build_messages(code: str) -> list[Message]:
     Return ``[{"role": "system", "content": SYSTEM_PROMPT},
               {"role": "user", "content": user_prompt(code)}]``.
     """
-    raise NotImplementedError("Implement build_messages (learning phase 1)")
+    return [
+        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "user", "content": user_prompt(code)}
+    ]
