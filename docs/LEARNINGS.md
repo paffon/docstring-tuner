@@ -89,8 +89,8 @@ how the *input* (function without its docstring) and *target* (the docstring) ar
 
 ## Phase 3 — Data pipeline
 
-- [ ] Build train/test splits from CodeSearchNet with `dt-data`; confirm they're disjoint
-- [ ] Commit
+- [x] Build train/test splits from CodeSearchNet with `dt-data`; confirm they're disjoint
+- [x] Commit
 
 **Concepts:** streaming a slice of a big HF dataset, filtering to useful examples, and caching to
 disk so a run is reproducible. Golden rule: **never let a test example leak into training.**

@@ -108,7 +108,8 @@ def _load_stream(cfg: DataCfg) -> Iterable[Any]:
 def iter_examples(cfg: DataCfg) -> Iterator[Example]:
     """Yield filtered, normalized examples from the streaming dataset."""
     source_column: str | None = None
-    for row in _load_stream(cfg):
+    stream = _load_stream(cfg)
+    for row in stream:
         if source_column is None:
             source_column = _pick_source_column(row)
         source = row.get(source_column)
