@@ -47,7 +47,7 @@ def _remaining_docstring(code: str) -> str | None:
 def test_returns_code_and_docstring() -> None:
     result = split_function(FUNC_WITH_DOC)
     assert result is not None
-    code, doc = result
+    _, doc = result
     assert "Return a greeting for the given name." in doc
     assert "Args:" in doc
 

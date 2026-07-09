@@ -72,6 +72,30 @@ module = [
 ]
 ignore_missing_imports = true
 
+[tool.pyright]
+# Same stance as the mypy config above: the ML libraries (transformers, peft,
+# trl, datasets, torch) ship incomplete type information, so strict mode floods
+# our own code with "type is unknown / partially unknown" noise that no
+# annotation on our side can silence (e.g. `AutoTokenizer.from_pretrained` is
+# itself partially typed). We turn off that family so real diagnostics —
+# reportReturnType, reportCallIssue, reportOptionalMemberAccess, unused vars,
+# etc. — stay visible. Our own code remains fully annotated under mypy strict.
+include = ["src", "tests"]
+exclude = ["notebooks"]
+typeCheckingMode = "strict"
+reportMissingTypeStubs = false
+reportUnknownMemberType = false
+reportUnknownVariableType = false
+reportUnknownArgumentType = false
+reportUnknownParameterType = false
+reportUnknownLambdaType = false
+reportPrivateImportUsage = false
+
+# Tests legitimately exercise module-private helpers (``_extract_json`` etc.).
+[[tool.pyright.executionEnvironments]]
+root = "tests"
+reportPrivateUsage = false
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"

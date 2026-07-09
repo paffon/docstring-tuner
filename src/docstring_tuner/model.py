@@ -15,7 +15,7 @@ never call ``model.to(device)`` on it.
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
 
 import torch
 from transformers import (
@@ -86,7 +86,8 @@ def load_base_with_adapter(
     from peft import PeftModel
 
     base = load_base(model_id, four_bit=four_bit)
-    return PeftModel.from_pretrained(base, adapter_dir)
+    # PeftModel wraps but doesn't subclass PreTrainedModel; it's drop-in for our inference use.
+    return cast(PreTrainedModel, PeftModel.from_pretrained(base, adapter_dir))
 
 
 def model_device(model: PreTrainedModel) -> torch.device:

@@ -22,7 +22,7 @@ from __future__ import annotations
 import argparse
 import sys
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 from .config import Config
 from .prompts import build_messages
@@ -49,9 +49,13 @@ def clean_docstring(text: str) -> str:
 
 def _render_prompts(tokenizer: PreTrainedTokenizerBase, codes: list[str]) -> list[str]:
     """Apply the model's chat template to each function's messages."""
+    # ``apply_chat_template`` is typed as a broad union; ``tokenize=False`` always yields str.
     return [
-        tokenizer.apply_chat_template(
-            build_messages(code), tokenize=False, add_generation_prompt=True
+        cast(
+            str,
+            tokenizer.apply_chat_template(
+                build_messages(code), tokenize=False, add_generation_prompt=True
+            ),
         )
         for code in codes
     ]
@@ -86,7 +90,9 @@ def generate_docstrings(
             )
             # Move only the integer input tensors to the model's device.
             encoded = {key: value.to(device) for key, value in encoded.items()}
-            generated = model.generate(
+            # torch's ``nn.Module.__getattr__`` stub types dynamic attrs as ``Tensor | Module``,
+            # so pyright misreads ``.generate`` as a non-callable Tensor.
+            generated = model.generate(  # pyright: ignore[reportCallIssue]
                 **encoded,
                 max_new_tokens=max_new_tokens,
                 do_sample=False,

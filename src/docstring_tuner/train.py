@@ -105,7 +105,8 @@ def train(cfg: Config) -> str:
 
     adapter_dir = cfg.train.adapter_dir
     Path(adapter_dir).mkdir(parents=True, exist_ok=True)
-    trainer.model.save_pretrained(adapter_dir)  # adapter weights + config only
+    # trl types ``trainer.model`` as ``Module | None``; after ``train()`` it is the PEFT model.
+    trainer.model.save_pretrained(adapter_dir)  # pyright: ignore[reportCallIssue, reportOptionalMemberAccess]  # adapter weights + config only
     tokenizer.save_pretrained(adapter_dir)
     return adapter_dir
 
