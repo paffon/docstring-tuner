@@ -99,8 +99,8 @@ disk so a run is reproducible. Golden rule: **never let a test example leak into
 
 ## Phase 4 — Model loading
 
-- [ ] Read `src/docstring_tuner/model.py`; understand the 4-bit config and the CUDA/CPU branches
-- [ ] Commit
+- [x] Read `src/docstring_tuner/model.py`; understand the 4-bit config and the CUDA/CPU branches
+- [x] Commit
 
 **Concepts:** what nf4 + double-quant actually configures, why a T4 needs fp16 (no bf16 hardware),
 and why you never `.to(device)` a `device_map`-placed 4-bit model.
