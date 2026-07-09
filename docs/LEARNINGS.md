@@ -109,8 +109,8 @@ and why you never `.to(device)` a `device_map`-placed 4-bit model.
 
 ## Phase 5 — QLoRA training
 
-- [ ] Read `src/docstring_tuner/train.py`; understand LoRA target modules and completion-only loss
-- [ ] Commit
+- [x] Read `src/docstring_tuner/train.py`; understand LoRA target modules and completion-only loss
+- [x] Commit
 
 **Concepts:** LoRA freezes the base and trains tiny low-rank adapters on the attention + MLP
 projections; `completion_only_loss` masks the prompt so the model is graded only on the docstring
