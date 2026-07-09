@@ -34,9 +34,36 @@ import ast  # noqa: F401  -- you'll use this once you implement split_function
 
 
 def split_function(source: str) -> tuple[str, str] | None:
-    """Return ``(code_without_docstring, docstring)`` for the first function in ``source``.
+   """Return ``(code_without_docstring, docstring)`` for the first function in ``source``.
 
-    Returns ``None`` if ``source`` doesn't parse, contains no top-level function, or the
-    first function has no docstring.
-    """
-    raise NotImplementedError("Implement split_function (learning phase 2)")
+   Returns ``None`` if ``source`` doesn't parse, contains no top-level function, or the
+   first function has no docstring.
+   """
+   try:
+      tree = ast.parse(source)
+   except SyntaxError:
+      return None
+   
+   first_func: ast.FunctionDef | ast.AsyncFunctionDef | None = None
+   for node in tree.body:
+      if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+         first_func = node
+         break
+   if first_func is None:
+      return None
+   
+   docstring = ast.get_docstring(first_func, clean=False)
+   if docstring is None:
+      return None
+   
+   # There is at least docstring, so we can remove it from the function body.
+   first_stmt = first_func.body[0]
+   if isinstance(first_stmt, ast.Expr) and isinstance(first_stmt.value, ast.Constant) and isinstance(first_stmt.value.value, str):
+      # The first statement is literally a single string constant (the docstring), so we remove it.
+      first_func.body.pop(0)
+
+   if not first_func.body:
+      # If removing the docstring left the function body empty, inject a 'pass' statement.
+      first_func.body = [ast.Pass()]
+   
+   return ast.unparse(first_func), docstring

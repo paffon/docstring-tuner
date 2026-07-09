@@ -77,9 +77,9 @@ has to cover the gap the prompt can't.
 
 ## Phase 2 — AST docstring-stripper **(hands-on)**
 
-- [ ] Implement `split_function()` in `src/docstring_tuner/ast_utils.py` so
+- [x] Implement `split_function()` in `src/docstring_tuner/ast_utils.py` so
       `pytest tests/test_ast_utils.py` passes
-- [ ] Commit
+- [x] Commit
 
 **Concepts:** parse code into a tree with the stdlib `ast` module, pull the docstring out with
 `ast.get_docstring`, drop that node, and turn the tree back into source with `ast.unparse`. This is

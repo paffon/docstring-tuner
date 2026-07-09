@@ -65,7 +65,7 @@ def test_signature_and_body_preserved() -> None:
     assert result is not None
     code, _ = result
     assert "def greet(name):" in code
-    assert '"Hello, " + name' in code
+    assert "'Hello, ' + name" in code  # ast.unparse normalizes to single quotes
     ast.parse(code)  # still valid Python
 
 
