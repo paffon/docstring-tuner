@@ -59,6 +59,7 @@ class EvalCfg:
     judge_model: str = "haiku"
     generations_path: str = "artifacts/generations.jsonl"
     report_path: str = "artifacts/eval_report.json"
+    cache_path: str = "artifacts/judge_cache.jsonl"  # keyed judge scores; skip re-scoring
 
 
 @dataclass(frozen=True, slots=True)

@@ -17,12 +17,15 @@ Every backend returns a :class:`JudgeScore` with three 0–10 rubric criteria an
 from __future__ import annotations
 
 import difflib
+import hashlib
 import json
 import os
 import shutil
 import subprocess
+import threading
 import urllib.request
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
+from pathlib import Path
 from typing import Any, Protocol, runtime_checkable
 
 SECTION_MARKERS: tuple[str, ...] = ("Args:", "Returns:", "Yields:", "Raises:")
@@ -189,6 +192,68 @@ class MockJudge:
             format=10.0 if sectioned else 3.0,
             rationale=f"offline mock: similarity={similarity:.2f}, sectioned={sectioned}",
         )
+
+
+class CachingJudge:
+    """Wrap any :class:`Judge` with a persistent, on-disk score cache.
+
+    Each score is keyed by a hash of ``(namespace, code, reference, candidate)`` — so a re-run
+    (or a run resumed after some calls failed) never pays for the same point twice, and switching
+    backend/model (the ``namespace``) never returns a stale score. The cache is an append-only
+    JSONL file: every fresh score is flushed immediately, so even a crash mid-run keeps the calls
+    already made. Thread-safe — the expensive inner call runs *outside* the lock.
+    """
+
+    def __init__(self, inner: Judge, path: Path, namespace: str) -> None:
+        self.inner = inner
+        self.path = path
+        self.namespace = namespace
+        self._lock = threading.Lock()
+        self._cache: dict[str, JudgeScore] = self._load()
+
+    def _load(self) -> dict[str, JudgeScore]:
+        cache: dict[str, JudgeScore] = {}
+        if not self.path.exists():
+            return cache
+        with self.path.open(encoding="utf-8") as handle:
+            for line in handle:
+                line = line.strip()
+                if not line:
+                    continue
+                record = json.loads(line)
+                cache[record["key"]] = _payload_to_score(record["score"])
+        return cache
+
+    def _key(self, code: str, reference: str, candidate: str) -> str:
+        digest = hashlib.sha256()
+        for part in (self.namespace, code, reference, candidate):
+            digest.update(part.encode("utf-8"))
+            digest.update(b"\0")
+        return digest.hexdigest()
+
+    def _append(self, key: str, score: JudgeScore) -> None:
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        record = json.dumps({"key": key, "score": asdict(score)}, ensure_ascii=False)
+        with self.path.open("a", encoding="utf-8") as handle:
+            handle.write(record + "\n")
+
+    @property
+    def hits(self) -> int:
+        """Number of entries currently in the cache (post-load + fills)."""
+        return len(self._cache)
+
+    def score(self, code: str, reference: str, candidate: str) -> JudgeScore:
+        key = self._key(code, reference, candidate)
+        with self._lock:
+            cached = self._cache.get(key)
+        if cached is not None:
+            return cached
+        score = self.inner.score(code, reference, candidate)  # expensive — held outside the lock
+        with self._lock:
+            if key not in self._cache:  # another thread may have filled it meanwhile
+                self._cache[key] = score
+                self._append(key, score)
+        return score
 
 
 def resolve_backend(backend: str) -> str:

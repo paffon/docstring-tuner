@@ -29,7 +29,7 @@ from typing import Any
 from tqdm import tqdm
 
 from .config import Config
-from .judge import Judge, JudgeError, make_judge, resolve_backend
+from .judge import CachingJudge, Judge, JudgeError, make_judge, resolve_backend
 from .metrics import is_google_style, rouge_l
 
 
@@ -202,11 +202,22 @@ def main() -> None:
     parser.add_argument(
         "--workers", type=int, default=8, help="Parallel judge calls (1 = serial)."
     )
+    parser.add_argument(
+        "--no-cache", action="store_true", help="Don't reuse/persist cached judge scores."
+    )
     args = parser.parse_args()
 
     cfg = Config.load(args.config)
     backend = args.judge or cfg.eval.judge_backend
-    judge = make_judge(backend, cfg.eval.judge_model)
+    resolved = resolve_backend(backend)
+    judge: Judge = make_judge(backend, cfg.eval.judge_model)
+    # The mock judge is instant, so caching only helps the real (paid) backends.
+    if not args.no_cache and resolved != "mock":
+        namespace = f"{resolved}:{cfg.eval.judge_model}"
+        cache = CachingJudge(judge, Path(cfg.eval.cache_path), namespace)
+        if cache.hits:
+            print(f"Judge cache: {cache.hits} scores loaded from {cfg.eval.cache_path}")
+        judge = cache
 
     gen_path = Path(args.generations or cfg.eval.generations_path)
     if args.generate or not gen_path.exists():
