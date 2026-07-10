@@ -143,9 +143,27 @@ an evaluator swappable and vendor-neutral.
 
 ## Phase 8 — Demo + Colab run
 
-- [ ] Run `notebooks/train_colab.ipynb` on a T4 → download `adapter/` + `generations.jsonl`
-- [ ] `dt-demo` and `dt-eval` locally; fill the README results table; commit a few `artifacts/samples/`
-- [ ] Commit
+- [x] Run `notebooks/train_colab.ipynb` on a T4 → download `adapter/` + `generations.jsonl`
+- [x] `dt-demo` and `dt-eval` locally; fill the README results table; commit a few `artifacts/samples/`
+- [x] Commit
+
+**The result — and why the two metrics disagree**
+
+Scored 149 held-out functions with the `claude_cli` (Haiku) judge:
+
+| Metric | Base | Tuned | Δ |
+| --- | --- | --- | --- |
+| Judge score (0–10) | 5.810 | 5.664 | −0.145 |
+| ROUGE-L (F1) | 0.235 | 0.328 | **+0.092** |
+| Format-compliance | 0.980 | 0.973 | −0.007 |
+
+ROUGE-L jumped ~39% relative; the judge dipped slightly. Not a contradiction — a finding. The
+samples (`artifacts/samples/side_by_side.md`) show why: the **base** model pads with a verbose,
+sometimes-hallucinated docstring *and re-emits the whole function*, while the **tuned** model
+emits a bare docstring in the reference's terse style. That style shift is exactly what lifts
+ROUGE-L. The judge, rewarding apparent completeness, doesn't see the terser tuned output as
+better — it may even reward base's padding. Lesson: **ROUGE-L measures conformance to the target
+wording; the judge measures intrinsic quality. They answer different questions, so report both.**
 
 **What I learned / a real bug on the first T4 run**
 

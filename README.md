@@ -21,13 +21,22 @@ attempt.
 
 ## Results
 
-_Filled in after a real training run (see `docs/LEARNINGS.md`, phase 8)._
+One QLoRA run on a Colab T4, scored over **149 held-out test functions** with the `claude_cli`
+judge (Haiku). See `docs/LEARNINGS.md`, phase 8.
 
 | Metric | Base | Fine-tuned | Δ |
 | --- | --- | --- | --- |
-| Judge score (0–10) | _TODO_ | _TODO_ | _TODO_ |
-| ROUGE-L (F1) | _TODO_ | _TODO_ | _TODO_ |
-| Format-compliance rate | _TODO_ | _TODO_ | _TODO_ |
+| Judge score (0–10) | 5.810 | 5.664 | −0.145 |
+| ROUGE-L (F1) | 0.235 | 0.328 | **+0.092** |
+| Format-compliance rate | 0.980 | 0.973 | −0.007 |
+
+**Honest read:** the fine-tune moved outputs sharply toward the reference wording (**ROUGE-L
++39% relative**), which is exactly what it was trained to do. But an independent LLM judge rated
+the tuned docstrings a hair *lower* — matching the target phrasing is not the same as being
+objectively better, and the strong instruct base is a high bar. Both models already satisfy the
+Google-style format check (~0.98), so the fine-tune's real effect is style-conformance, not a
+quality jump. Reporting both metrics is the point: they disagree, and that disagreement is the
+finding.
 
 Full machine-readable results: `artifacts/eval_report.json`. Sample side-by-side outputs live
 in `artifacts/samples/`.
