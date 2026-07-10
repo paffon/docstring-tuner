@@ -11,6 +11,7 @@ trl==1.7.1
 peft==0.19.1
 accelerate==1.14.0
 datasets==4.8.5
+tqdm==4.68.4  # eval progress bar (also a transitive HF dep; pinned here since we import it directly)
 
 # Dev tooling
 pytest==8.3.4

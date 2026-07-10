@@ -18,10 +18,13 @@ from __future__ import annotations
 
 import argparse
 import json
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from statistics import mean
-from typing import Any
+from typing import Any, cast
+
+from tqdm import tqdm
 
 from .config import Config
 from .judge import Judge, make_judge, resolve_backend
@@ -55,6 +58,33 @@ def score_candidate(judge: Judge, code: str, reference: str, candidate: str) -> 
         rouge_l=rouge_l(candidate, reference),
         google_style=is_google_style(candidate),
     )
+
+
+def score_variant(
+    judge: Judge, rows: list[dict[str, Any]], key: str, workers: int
+) -> list[ExampleScores]:
+    """Score one variant (``key`` = ``base``/``tuned``) across all rows, with a progress bar.
+
+    Each judge call is a blocking subprocess/HTTP request (I/O-bound), so a thread pool gives
+    near-linear speedup despite the GIL. We advance the ``tqdm`` bar as each call *completes*
+    (via ``as_completed``) for an honest ETA, then write results back by their original index so
+    the returned scores stay aligned with ``rows``. ``workers=1`` runs strictly serially.
+    """
+
+    def _score(row: dict[str, Any]) -> ExampleScores:
+        return score_candidate(judge, row["code"], row["reference"], row[key])
+
+    if workers <= 1:
+        return [_score(row) for row in tqdm(rows, desc=f"judge {key}", unit="ex")]
+
+    results: list[ExampleScores | None] = [None] * len(rows)
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        index_of = {pool.submit(_score, row): i for i, row in enumerate(rows)}
+        for future in tqdm(
+            as_completed(index_of), total=len(rows), desc=f"judge {key}", unit="ex"
+        ):
+            results[index_of[future]] = future.result()
+    return cast("list[ExampleScores]", results)
 
 
 def aggregate(scores: list[ExampleScores]) -> VariantSummary:
@@ -150,6 +180,9 @@ def main() -> None:
     parser.add_argument("--generations", default=None, help="Path to a generations JSONL.")
     parser.add_argument("--generate", action="store_true", help="Generate from the models first.")
     parser.add_argument("--limit", type=int, default=None, help="Only score the first N examples.")
+    parser.add_argument(
+        "--workers", type=int, default=8, help="Parallel judge calls (1 = serial)."
+    )
     args = parser.parse_args()
 
     cfg = Config.load(args.config)
@@ -168,8 +201,8 @@ def main() -> None:
         if args.limit is not None:
             rows = rows[: args.limit]
 
-    base_scores = [score_candidate(judge, r["code"], r["reference"], r["base"]) for r in rows]
-    tuned_scores = [score_candidate(judge, r["code"], r["reference"], r["tuned"]) for r in rows]
+    base_scores = score_variant(judge, rows, "base", args.workers)
+    tuned_scores = score_variant(judge, rows, "tuned", args.workers)
     base_summary = aggregate(base_scores)
     tuned_summary = aggregate(tuned_scores)
 
