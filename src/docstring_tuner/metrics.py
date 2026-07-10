@@ -32,6 +32,7 @@ Two functions:
 from __future__ import annotations
 
 import re
+from typing import List
 
 SECTION_HEADERS: frozenset[str] = frozenset(
     {"Args:", "Arguments:", "Returns:", "Return:", "Yields:", "Raises:"}
@@ -43,11 +44,57 @@ def tokenize(text: str) -> list[str]:
     return re.findall(r"\w+", text.lower())
 
 
+def calc_new_value(
+    tokenized_candidate: List[str], tokenized_reference: List[str],
+    row: int, col: int,
+    dp: List[List[int]]) -> int:
+  """
+  Dynamic value caluclation for LCS problem
+  """
+  if tokenized_candidate[row - 1] == tokenized_reference[col - 1]:
+    return dp[row - 1][col - 1] + 1
+
+  return max(dp[row - 1][col], dp[row][col - 1])
+
+
 def rouge_l(candidate: str, reference: str) -> float:
-    """Return the ROUGE-L F1 (LCS-based) between candidate and reference, in ``[0, 1]``."""
-    raise NotImplementedError("Implement rouge_l (learning phase 7)")
+  """Return the ROUGE-L F1 (LCS-based) between candidate and reference, in ``[0, 1]``."""
+  tokenized_candidate: List[str] = tokenize(candidate)
+  tokenized_reference: List[str] = tokenize(reference)
+  
+  if not tokenized_candidate or not tokenized_reference:
+    return 0
+
+  length_candidate: int = len(tokenized_candidate)
+  length_reference: int = len(tokenized_reference)
+
+  dp: List[List[int]] = [
+     [0 for _ in range(length_reference + 1)] for _ in range(length_candidate + 1)
+  ]
+
+  for row in range(1, length_candidate + 1):
+    for col in range(1, length_reference + 1):
+      dp[row][col] = calc_new_value(tokenized_candidate, tokenized_reference, row, col, dp)
+
+  if dp[-1][-1] == 0:
+    return 0
+
+  precision = dp[-1][-1] / length_candidate
+  recall = dp[-1][-1] / length_reference
+
+  f1 = 2 * precision * recall / (precision + recall)
+
+  return f1
 
 
 def is_google_style(docstring: str) -> bool:
-    """Return True if ``docstring`` looks like a sectioned Google-style docstring."""
-    raise NotImplementedError("Implement is_google_style (learning phase 7)")
+  """Return True if ``docstring`` looks like a sectioned Google-style docstring."""
+  lines = [line.strip() for line in docstring.strip().splitlines() if line.strip()]
+
+  if not lines:
+      return False
+
+  if lines[0] in SECTION_HEADERS:
+      return False
+
+  return any(line in SECTION_HEADERS for line in lines[1:])

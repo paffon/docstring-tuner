@@ -130,10 +130,10 @@ device, and slicing the prompt off the output. This is the "real PyTorch" in the
 
 ## Phase 7 — Metrics + eval harness **(metrics = hands-on)**
 
-- [ ] Implement `rouge_l()` and `is_google_style()` in `src/docstring_tuner/metrics.py` so
+- [x] Implement `rouge_l()` and `is_google_style()` in `src/docstring_tuner/metrics.py` so
       `pytest tests/test_metrics.py` passes
-- [ ] Read `src/docstring_tuner/judge.py` and `evaluate.py`
-- [ ] Commit
+- [x] Read `src/docstring_tuner/judge.py` and `evaluate.py`
+- [x] Commit
 
 **Concepts:** ROUGE-L is a longest-common-subsequence overlap — implementing it by hand demystifies
 "lexical overlap" metrics. The judge is an LLM behind a one-method `Protocol`, which is how you keep
