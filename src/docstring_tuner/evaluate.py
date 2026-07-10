@@ -18,16 +18,18 @@ from __future__ import annotations
 
 import argparse
 import json
+from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from statistics import mean
-from typing import Any, cast
+from subprocess import TimeoutExpired
+from typing import Any
 
 from tqdm import tqdm
 
 from .config import Config
-from .judge import Judge, make_judge, resolve_backend
+from .judge import Judge, JudgeError, make_judge, resolve_backend
 from .metrics import is_google_style, rouge_l
 
 
@@ -74,17 +76,34 @@ def score_variant(
     def _score(row: dict[str, Any]) -> ExampleScores:
         return score_candidate(judge, row["code"], row["reference"], row[key])
 
-    if workers <= 1:
-        return [_score(row) for row in tqdm(rows, desc=f"judge {key}", unit="ex")]
-
     results: list[ExampleScores | None] = [None] * len(rows)
-    with ThreadPoolExecutor(max_workers=workers) as pool:
-        index_of = {pool.submit(_score, row): i for i, row in enumerate(rows)}
-        for future in tqdm(
-            as_completed(index_of), total=len(rows), desc=f"judge {key}", unit="ex"
-        ):
-            results[index_of[future]] = future.result()
-    return cast("list[ExampleScores]", results)
+    failures = 0
+
+    def _store(index: int, produce: Callable[[], ExampleScores]) -> None:
+        """Run one scoring call; a single judge failure is skipped, not fatal."""
+        nonlocal failures
+        try:
+            results[index] = produce()
+        except (JudgeError, TimeoutExpired) as error:
+            failures += 1
+            tqdm.write(f"  judge {key}[{index}] failed, skipping: {error}")
+
+    bar = tqdm(total=len(rows), desc=f"judge {key}", unit="ex")
+    if workers <= 1:
+        for index, row in enumerate(rows):
+            _store(index, lambda row=row: _score(row))
+            bar.update(1)
+    else:
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            index_of = {pool.submit(_score, row): i for i, row in enumerate(rows)}
+            for future in as_completed(index_of):
+                _store(index_of[future], future.result)
+                bar.update(1)
+    bar.close()
+
+    if failures:
+        tqdm.write(f"  {failures}/{len(rows)} {key} judge calls failed and were skipped")
+    return [score for score in results if score is not None]
 
 
 def aggregate(scores: list[ExampleScores]) -> VariantSummary:
