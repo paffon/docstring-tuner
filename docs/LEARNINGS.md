@@ -147,6 +147,24 @@ an evaluator swappable and vendor-neutral.
 - [ ] `dt-demo` and `dt-eval` locally; fill the README results table; commit a few `artifacts/samples/`
 - [ ] Commit
 
+**What I learned / a real bug on the first T4 run**
+
+Training died at step 0 with `_amp_foreach_non_finite_check_and_unscale_cuda not
+implemented for 'BFloat16'`. The chase: I probed the machine instead of guessing —
+`get_device_capability()` → `(7, 5)`, `supports_bf16()` → `False`, `compute_dtype()` →
+`fp16`. So dtype detection was correct; the base was fp16, not bf16. Then I probed the
+*trainable* params: all `fp32`.
+
+That was the tell. A fp16 `GradScaler` exists only to keep **fp16** gradients from
+underflowing. My adapter weights are fp32 — the scaler protects nothing, yet `fp16=True`
+still builds it, and its unscale kernel then chokes on the T4. All cost, no benefit. Fix:
+only enable mixed precision when bf16 hardware is present (`fp16=False` on Turing); the
+fp32 adapter trains fine without a scaler. The base still computes in fp16 via bitsandbytes.
+
+Lesson that generalized: **mixed-precision `fp16=True` is worth it only when your trainable
+params are fp16.** With QLoRA the adapter is fp32, so a T4 wants plain fp32 optimization,
+not fp16+scaler.
+
 ---
 
 ## Phase 9 — Docs & ship

@@ -81,8 +81,10 @@ python -m docstring_tuner.evaluate --judge mock   # offline smoke test
 
 - **4-bit QLoRA needs a CUDA GPU.** A free Colab/Kaggle **T4 is enough** (training the default
   1.5B model on ~1.5k examples takes a few minutes).
-- A **T4 is Turing (sm_75) and has no bf16 hardware**, so training uses fp16 there; bf16 is
-  auto-enabled only on Ampere or newer.
+- A **T4 is Turing (sm_75) and has no bf16 hardware**. bf16 mixed precision is auto-enabled
+  only on Ampere or newer; on a T4 we train the fp32 LoRA adapter with no mixed-precision
+  scaler (an fp16 `GradScaler` would protect nothing and crashes on Turing — see phase 8 in
+  `docs/LEARNINGS.md`).
 - **Apple Silicon / MPS cannot run bitsandbytes 4-bit.**
 - **CPU fallback:** inference (demo/eval generation) runs on CPU in fp32 — slow, but fine for a
   handful of examples. Training on CPU is not supported.

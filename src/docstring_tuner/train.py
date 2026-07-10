@@ -56,7 +56,13 @@ def make_lora_config(tc: TrainCfg) -> LoraConfig:
 
 
 def make_sft_config(tc: TrainCfg) -> SFTConfig:
-    """Build the trl SFT training configuration (fp16 on T4, bf16 only on Ampere+)."""
+    """Build the trl SFT training configuration (bf16 on Ampere+, else plain fp32).
+
+    We deliberately do **not** enable fp16 mixed precision on Turing (T4): the LoRA adapter
+    weights are fp32, so the fp16 ``GradScaler`` protects nothing, and its gradient-unscale
+    kernel isn't implemented for the grad dtype that shows up on a T4 — it crashes at step 0.
+    Mixed precision is only turned on when bf16 hardware is present (no scaler involved).
+    """
     bf16 = supports_bf16()
     return SFTConfig(
         output_dir=tc.output_dir,
@@ -71,7 +77,7 @@ def make_sft_config(tc: TrainCfg) -> SFTConfig:
         warmup_ratio=0.03,
         logging_steps=10,
         optim="paged_adamw_8bit",
-        fp16=not bf16,
+        fp16=False,
         bf16=bf16,
         gradient_checkpointing=True,
         gradient_checkpointing_kwargs={"use_reentrant": False},
