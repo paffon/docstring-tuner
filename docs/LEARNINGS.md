@@ -63,7 +63,7 @@ Set up the skeleton so everything after it has a home.
 
 ---
 
-## Phase 1 — Config + prompts **(prompts = hands-on)**
+## Phase 1 — Config + prompts **(prompts = hands-on)** ✅
 
 - [x] Read `src/docstring_tuner/config.py` (frozen dataclasses + a tiny `tomllib` loader)
 - [x] Implement `src/docstring_tuner/prompts.py` so `pytest tests/test_prompts.py` passes
@@ -75,7 +75,7 @@ has to cover the gap the prompt can't.
 
 ---
 
-## Phase 2 — AST docstring-stripper **(hands-on)**
+## Phase 2 — AST docstring-stripper **(hands-on)** ✅
 
 - [x] Implement `split_function()` in `src/docstring_tuner/ast_utils.py` so
       `pytest tests/test_ast_utils.py` passes
@@ -87,7 +87,7 @@ how the *input* (function without its docstring) and *target* (the docstring) ar
 
 ---
 
-## Phase 3 — Data pipeline
+## Phase 3 — Data pipeline ✅
 
 - [x] Build train/test splits from CodeSearchNet with `dt-data`; confirm they're disjoint
 - [x] Commit
@@ -97,7 +97,7 @@ disk so a run is reproducible. Golden rule: **never let a test example leak into
 
 ---
 
-## Phase 4 — Model loading
+## Phase 4 — Model loading ✅
 
 - [x] Read `src/docstring_tuner/model.py`; understand the 4-bit config and the CUDA/CPU branches
 - [x] Commit
@@ -107,7 +107,7 @@ and why you never `.to(device)` a `device_map`-placed 4-bit model.
 
 ---
 
-## Phase 5 — QLoRA training
+## Phase 5 — QLoRA training ✅
 
 - [x] Read `src/docstring_tuner/train.py`; understand LoRA target modules and completion-only loss
 - [x] Commit
@@ -118,10 +118,10 @@ it writes.
 
 ---
 
-## Phase 6 — Generation loop
+## Phase 6 — Generation loop ✅
 
-- [ ] Read `src/docstring_tuner/generate.py`; understand the explicit `torch.no_grad()` loop
-- [ ] Commit
+- [x] Read `src/docstring_tuner/generate.py`; understand the explicit `torch.no_grad()` loop
+- [x] Commit
 
 **Concepts:** left-padding for batched generation, moving only the input tensors to the model's
 device, and slicing the prompt off the output. This is the "real PyTorch" in the project.
