@@ -187,9 +187,9 @@ not fp16+scaler.
 
 ## Phase 9 — Docs & ship
 
-- [ ] Finalize README (results, compute, scope); `mypy` + `ruff` + `black` clean
-- [ ] Push to a private GitHub repo
-- [ ] Commit
+- [x] Finalize README (results, compute, scope); `mypy` + `ruff` + `black` clean
+- [x] Push to a private GitHub repo
+- [x] Commit
 
 ---
 

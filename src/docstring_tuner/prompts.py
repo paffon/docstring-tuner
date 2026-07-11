@@ -93,5 +93,5 @@ def build_messages(code: str) -> list[Message]:
     """
     return [
         {"role": "system", "content": SYSTEM_PROMPT},
-        {"role": "user", "content": user_prompt(code)}
+        {"role": "user", "content": user_prompt(code)},
     ]

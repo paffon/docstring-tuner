@@ -32,7 +32,6 @@ Two functions:
 from __future__ import annotations
 
 import re
-from typing import List
 
 SECTION_HEADERS: frozenset[str] = frozenset(
     {"Args:", "Arguments:", "Returns:", "Return:", "Yields:", "Raises:"}
@@ -45,56 +44,59 @@ def tokenize(text: str) -> list[str]:
 
 
 def calc_new_value(
-    tokenized_candidate: List[str], tokenized_reference: List[str],
-    row: int, col: int,
-    dp: List[List[int]]) -> int:
-  """
-  Dynamic value caluclation for LCS problem
-  """
-  if tokenized_candidate[row - 1] == tokenized_reference[col - 1]:
-    return dp[row - 1][col - 1] + 1
+    tokenized_candidate: list[str],
+    tokenized_reference: list[str],
+    row: int,
+    col: int,
+    dp: list[list[int]],
+) -> int:
+    """
+    Dynamic value caluclation for LCS problem
+    """
+    if tokenized_candidate[row - 1] == tokenized_reference[col - 1]:
+        return dp[row - 1][col - 1] + 1
 
-  return max(dp[row - 1][col], dp[row][col - 1])
+    return max(dp[row - 1][col], dp[row][col - 1])
 
 
 def rouge_l(candidate: str, reference: str) -> float:
-  """Return the ROUGE-L F1 (LCS-based) between candidate and reference, in ``[0, 1]``."""
-  tokenized_candidate: List[str] = tokenize(candidate)
-  tokenized_reference: List[str] = tokenize(reference)
-  
-  if not tokenized_candidate or not tokenized_reference:
-    return 0
+    """Return the ROUGE-L F1 (LCS-based) between candidate and reference, in ``[0, 1]``."""
+    tokenized_candidate: list[str] = tokenize(candidate)
+    tokenized_reference: list[str] = tokenize(reference)
 
-  length_candidate: int = len(tokenized_candidate)
-  length_reference: int = len(tokenized_reference)
+    if not tokenized_candidate or not tokenized_reference:
+        return 0
 
-  dp: List[List[int]] = [
-     [0 for _ in range(length_reference + 1)] for _ in range(length_candidate + 1)
-  ]
+    length_candidate: int = len(tokenized_candidate)
+    length_reference: int = len(tokenized_reference)
 
-  for row in range(1, length_candidate + 1):
-    for col in range(1, length_reference + 1):
-      dp[row][col] = calc_new_value(tokenized_candidate, tokenized_reference, row, col, dp)
+    dp: list[list[int]] = [
+        [0 for _ in range(length_reference + 1)] for _ in range(length_candidate + 1)
+    ]
 
-  if dp[-1][-1] == 0:
-    return 0
+    for row in range(1, length_candidate + 1):
+        for col in range(1, length_reference + 1):
+            dp[row][col] = calc_new_value(tokenized_candidate, tokenized_reference, row, col, dp)
 
-  precision = dp[-1][-1] / length_candidate
-  recall = dp[-1][-1] / length_reference
+    if dp[-1][-1] == 0:
+        return 0
 
-  f1 = 2 * precision * recall / (precision + recall)
+    precision = dp[-1][-1] / length_candidate
+    recall = dp[-1][-1] / length_reference
 
-  return f1
+    f1 = 2 * precision * recall / (precision + recall)
+
+    return f1
 
 
 def is_google_style(docstring: str) -> bool:
-  """Return True if ``docstring`` looks like a sectioned Google-style docstring."""
-  lines = [line.strip() for line in docstring.strip().splitlines() if line.strip()]
+    """Return True if ``docstring`` looks like a sectioned Google-style docstring."""
+    lines = [line.strip() for line in docstring.strip().splitlines() if line.strip()]
 
-  if not lines:
-      return False
+    if not lines:
+        return False
 
-  if lines[0] in SECTION_HEADERS:
-      return False
+    if lines[0] in SECTION_HEADERS:
+        return False
 
-  return any(line in SECTION_HEADERS for line in lines[1:])
+    return any(line in SECTION_HEADERS for line in lines[1:])

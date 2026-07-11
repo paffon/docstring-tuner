@@ -75,7 +75,7 @@ def generate_docstrings(
     from .model import model_device
 
     device = model_device(model)
-    model.eval()
+    model.eval()  # type: ignore[no-untyped-call]  # nn.Module.eval is untyped
     outputs: list[str] = []
     with torch.no_grad():
         for start in range(0, len(codes), batch_size):
@@ -92,7 +92,7 @@ def generate_docstrings(
             encoded = {key: value.to(device) for key, value in encoded.items()}
             # torch's ``nn.Module.__getattr__`` stub types dynamic attrs as ``Tensor | Module``,
             # so pyright misreads ``.generate`` as a non-callable Tensor.
-            generated = model.generate(  # pyright: ignore[reportCallIssue]
+            generated = model.generate(  # type: ignore[operator]  # pyright: ignore[reportCallIssue]
                 **encoded,
                 max_new_tokens=max_new_tokens,
                 do_sample=False,

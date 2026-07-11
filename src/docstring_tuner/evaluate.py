@@ -21,6 +21,7 @@ import json
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import asdict, dataclass
+from functools import partial
 from pathlib import Path
 from statistics import mean
 from subprocess import TimeoutExpired
@@ -91,7 +92,7 @@ def score_variant(
     bar = tqdm(total=len(rows), desc=f"judge {key}", unit="ex")
     if workers <= 1:
         for index, row in enumerate(rows):
-            _store(index, lambda row=row: _score(row))
+            _store(index, partial(_score, row))
             bar.update(1)
     else:
         with ThreadPoolExecutor(max_workers=workers) as pool:
@@ -199,9 +200,7 @@ def main() -> None:
     parser.add_argument("--generations", default=None, help="Path to a generations JSONL.")
     parser.add_argument("--generate", action="store_true", help="Generate from the models first.")
     parser.add_argument("--limit", type=int, default=None, help="Only score the first N examples.")
-    parser.add_argument(
-        "--workers", type=int, default=8, help="Parallel judge calls (1 = serial)."
-    )
+    parser.add_argument("--workers", type=int, default=8, help="Parallel judge calls (1 = serial).")
     parser.add_argument(
         "--no-cache", action="store_true", help="Don't reuse/persist cached judge scores."
     )

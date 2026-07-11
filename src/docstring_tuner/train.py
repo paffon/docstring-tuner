@@ -15,7 +15,10 @@ from pathlib import Path
 
 from datasets import Dataset
 from peft import LoraConfig
-from trl import SFTConfig, SFTTrainer
+from trl import (  # type: ignore[attr-defined]  # trl re-exports without __all__
+    SFTConfig,
+    SFTTrainer,
+)
 
 from .config import Config, TrainCfg
 from .data import read_jsonl, to_sft_record
@@ -112,7 +115,9 @@ def train(cfg: Config) -> str:
     adapter_dir = cfg.train.adapter_dir
     Path(adapter_dir).mkdir(parents=True, exist_ok=True)
     # trl types ``trainer.model`` as ``Module | None``; after ``train()`` it is the PEFT model.
-    trainer.model.save_pretrained(adapter_dir)  # pyright: ignore[reportCallIssue, reportOptionalMemberAccess]  # adapter weights + config only
+    trainer.model.save_pretrained(  # type: ignore[union-attr, operator]  # Module|None, typed post-train
+        adapter_dir
+    )  # pyright: ignore[reportCallIssue, reportOptionalMemberAccess]  # adapter weights + config only
     tokenizer.save_pretrained(adapter_dir)
     return adapter_dir
 

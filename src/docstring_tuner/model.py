@@ -46,7 +46,7 @@ def compute_dtype() -> torch.dtype:
 
 def make_bnb_config(dtype: torch.dtype) -> BitsAndBytesConfig:
     """4-bit nf4 + double-quant config with the given compute dtype."""
-    return BitsAndBytesConfig(
+    return BitsAndBytesConfig(  # type: ignore[no-untyped-call]  # transformers ctor is untyped
         load_in_4bit=True,
         bnb_4bit_quant_type="nf4",
         bnb_4bit_use_double_quant=True,

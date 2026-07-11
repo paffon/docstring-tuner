@@ -69,8 +69,17 @@ module = [
     "datasets.*",
     "accelerate.*",
     "torch.*",
+    "tqdm.*",
 ]
 ignore_missing_imports = true
+
+# numpy is only a transitive dependency (we never import it), but its 2.5+ stubs
+# use PEP 695 `type` statements that mypy rejects while we target python 3.11.
+# Don't follow into them — treat the module as Any rather than parse its stubs.
+[[tool.mypy.overrides]]
+module = ["numpy.*"]
+follow_imports = "skip"
+follow_imports_for_stubs = true
 
 [tool.pyright]
 # Same stance as the mypy config above: the ML libraries (transformers, peft,
