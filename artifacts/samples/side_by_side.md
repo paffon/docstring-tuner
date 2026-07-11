@@ -15,7 +15,7 @@ def deleteReplicationMetadata(self, pid, nodeId, serialVersion, vendorSpecific=N
 
 **Reference docstring**
 
-```
+```python
 See Also: deleteReplicationMetadataResponse()
 
 Args:
@@ -27,9 +27,15 @@ Args:
 Returns:
 ```
 
-**Base output** (ROUGE-L 0.140)
+<table>
+<tr>
+<th>Base output (ROUGE-L 0.140)</th>
+<th>Fine-tuned output (ROUGE-L 0.545)</th>
+</tr>
+<tr valign="top">
+<td>
 
-```
+```python
 def deleteReplicationMetadata(self, pid, nodeId, serialVersion, vendorSpecific=None):
     """
     Deletes replication metadata based on provided parameters.
@@ -50,9 +56,10 @@ def deleteReplicationMetadata(self, pid, nodeId, serialVersion, vendorSpecific=N
     pass
 ```
 
-**Fine-tuned output** (ROUGE-L 0.545)
+</td>
+<td>
 
-```
+```python
 Delete replication metadata associated with this replication.
 
 Args:
@@ -63,6 +70,10 @@ Args:
 
 Returns:
 ```
+
+</td>
+</tr>
+</table>
 
 ## Example 2
 
@@ -79,7 +90,7 @@ def peek_step(self, val: ObjectValue, sn: 'DataNode') -> Tuple[Value, 'DataNode'
 
 **Reference docstring**
 
-```
+```python
 Return member value addressed by the receiver + its schema node.
 
 Args:
@@ -87,9 +98,15 @@ Args:
     sn:  Current schema node.
 ```
 
-**Base output** (ROUGE-L 0.114)
+<table>
+<tr>
+<th>Base output (ROUGE-L 0.114)</th>
+<th>Fine-tuned output (ROUGE-L 0.189)</th>
+</tr>
+<tr valign="top">
+<td>
 
-```
+```python
 def peek_step(self, val: ObjectValue, sn: 'DataNode') -> Tuple[Value, 'DataNode']:
     """
     Retrieves the value from the specified child node of the given DataNode.
@@ -113,9 +130,10 @@ def peek_step(self, val: ObjectValue, sn: 'DataNode') -> Tuple[Value, 'DataNode'
         return (None, cn)
 ```
 
-**Fine-tuned output** (ROUGE-L 0.189)
+</td>
+<td>
 
-```
+```python
 Peeks at the value of this DataNode's child node.
 
 Args:
@@ -127,6 +145,10 @@ Returns:
     DataNode object. If no such child exists, None is returned on both
     values.
 ```
+
+</td>
+</tr>
+</table>
 
 ## Example 3
 
@@ -152,7 +174,7 @@ def get_credentials(scopes=None, secrets=None, storage=None, no_webserver=False)
 
 **Reference docstring**
 
-```
+```python
 Make OAuth 2.0 credentials for scopes from ``secrets`` and ``storage`` files.
 
 Args:
@@ -165,9 +187,15 @@ see https://developers.google.com/sheets/quickstart/python
 see https://developers.google.com/api-client-library/python/guide/aaa_client_secrets
 ```
 
-**Base output** (ROUGE-L 0.169)
+<table>
+<tr>
+<th>Base output (ROUGE-L 0.169)</th>
+<th>Fine-tuned output (ROUGE-L 0.173)</th>
+</tr>
+<tr valign="top">
+<td>
 
-```
+```python
 def get_credentials(scopes=None, secrets=None, storage=None, no_webserver=False):
     """
     Retrieves credentials from the specified storage location based on provided scopes, secrets, and storage parameters.
@@ -186,9 +214,10 @@ def get_credentials(scopes=None, secrets=None, storage=None, no_webserver=False)
     """
 ```
 
-**Fine-tuned output** (ROUGE-L 0.173)
+</td>
+<td>
 
-```
+```python
 Get credentials from a local file or from a web server.
 
 Args:
@@ -202,3 +231,7 @@ Args:
 Returns:
     A :class:`~google.oauth2.credentials.Credentials` object.
 ```
+
+</td>
+</tr>
+</table>
